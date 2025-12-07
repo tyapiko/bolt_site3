@@ -14,6 +14,27 @@ window.addEventListener('scroll', () => {
     lastScroll = currentScroll;
 });
 
+// ===== パララックス効果 =====
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const heroContent = document.querySelector('.hero-content');
+    const particles = document.querySelector('.particles');
+    const gradientOverlay = document.querySelector('.gradient-overlay');
+
+    if (heroContent) {
+        heroContent.style.transform = `translateY(${scrolled * 0.5}px)`;
+        heroContent.style.opacity = 1 - (scrolled / 600);
+    }
+
+    if (particles) {
+        particles.style.transform = `translateY(${scrolled * 0.3}px)`;
+    }
+
+    if (gradientOverlay) {
+        gradientOverlay.style.transform = `translateY(${scrolled * 0.2}px) scale(${1 + scrolled * 0.0002})`;
+    }
+});
+
 // ===== モバイルメニュー =====
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu');
@@ -139,26 +160,28 @@ newsletterForm?.addEventListener('submit', async (e) => {
     }, 2000);
 });
 
-// ===== スクロールアニメーション =====
+//===== スムーズスクロールアニメーション =====
 const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
+    threshold: 0.15,
+    rootMargin: '0px 0px -80px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }, index * 100);
         }
     });
 }, observerOptions);
 
 // アニメーション対象要素
-document.querySelectorAll('.article-card, .section-header').forEach(el => {
+document.querySelectorAll('.article-card, .section-header, .newsletter').forEach((el, index) => {
     el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    el.style.transform = 'translateY(40px)';
+    el.style.transition = 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
     observer.observe(el);
 });
 

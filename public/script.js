@@ -176,6 +176,58 @@ const viewCount = localStorage.getItem('pageViews') || 0;
 localStorage.setItem('pageViews', parseInt(viewCount) + 1);
 console.log(`ページビュー: ${parseInt(viewCount) + 1}回`);
 
+// ===== タイトルタイピングアニメーション =====
+const heroTitle = document.querySelector('.hero-title');
+if (heroTitle) {
+    const text1 = 'テクノロジーの';
+    const text2 = '未来を探求する';
+
+    // 元のテキストをクリア
+    heroTitle.innerHTML = '';
+
+    // 2つのspan要素を作成
+    const line1 = document.createElement('span');
+    line1.className = 'title-line typing-line';
+    const line2 = document.createElement('span');
+    line2.className = 'title-line typing-line';
+
+    heroTitle.appendChild(line1);
+    heroTitle.appendChild(line2);
+
+    // タイピング効果
+    let i = 0;
+    const typingSpeed = 100;
+
+    function typeText1() {
+        if (i < text1.length) {
+            line1.textContent += text1.charAt(i);
+            i++;
+            setTimeout(typeText1, typingSpeed);
+        } else {
+            // 1行目が完了したら2行目を開始
+            i = 0;
+            setTimeout(typeText2, 200);
+        }
+    }
+
+    function typeText2() {
+        if (i < text2.length) {
+            line2.textContent += text2.charAt(i);
+            i++;
+            setTimeout(typeText2, typingSpeed);
+        } else {
+            // カーソル点滅を追加
+            const cursor = document.createElement('span');
+            cursor.className = 'typing-cursor';
+            cursor.textContent = '|';
+            line2.appendChild(cursor);
+        }
+    }
+
+    // 少し遅延してから開始
+    setTimeout(typeText1, 500);
+}
+
 // ===== デバッグ情報 =====
-console.log('%c🚀 TechBlog v1.0', 'color: #6366f1; font-size: 20px; font-weight: bold;');
-console.log('%cPowered by Node.js + Express', 'color: #64748b; font-size: 12px;');
+console.log('%c🚀 TechBlog v2.0 - Cyber Edition', 'color: #00f0ff; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px rgba(0,240,255,0.5);');
+console.log('%cPowered by Node.js + Express + AI', 'color: #bf00ff; font-size: 12px;');

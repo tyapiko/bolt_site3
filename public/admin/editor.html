@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記事エディタ - TechBlog</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000814 0%, #0a1128 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+        }
+
+        .admin-header {
+            background: rgba(10, 17, 40, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 102, 255, 0.2);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #00c9ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0066ff 0%, #00c9ff 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .editor-form {
+            background: rgba(10, 17, 40, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 102, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 8, 20, 0.6);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 400px;
+            resize: vertical;
+            font-family: 'Monaco', 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(0, 8, 20, 0.6);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .form-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <h1 class="admin-title">✍️ 記事エディタ</h1>
+        <nav class="admin-nav">
+            <a href="/admin/dashboard" class="btn btn-secondary">← ダッシュボード</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div id="alert" class="alert"></div>
+
+        <form id="editorForm" class="editor-form">
+            <input type="hidden" id="articleId" value="">
+
+            <div class="form-group">
+                <label for="title" class="form-label">タイトル *</label>
+                <input type="text" id="title" name="title" class="form-input" placeholder="記事のタイトルを入力" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category" class="form-label">カテゴリー *</label>
+                    <select id="category" name="category" class="form-select" required>
+                        <option value="">選択してください</option>
+                        <option value="AI & Machine Learning">AI & Machine Learning</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Cloud & DevOps">Cloud & DevOps</option>
+                        <option value="Mobile Development">Mobile Development</option>
+                        <option value="Security">Security</option>
+                        <option value="Database">Database</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="readTime" class="form-label">読む時間</label>
+                    <input type="text" id="readTime" name="read_time" class="form-input" placeholder="例: 5分で読める" value="5分で読める">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="excerpt" class="form-label">要約 *</label>
+                <input type="text" id="excerpt" name="excerpt" class="form-input" placeholder="記事の概要（150文字程度）" required>
+            </div>
+
+            <div class="form-group">
+                <label for="imageGradient" class="form-label">画像グラデーション</label>
+                <select id="imageGradient" name="image_gradient" class="form-select">
+                    <option value="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">Purple Dream</option>
+                    <option value="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">Pink Sunset</option>
+                    <option value="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">Ocean Blue</option>
+                    <option value="linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">Green Mint</option>
+                    <option value="linear-gradient(135deg, #fa709a 0%, #fee140 100%)">Warm Flame</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="content" class="form-label">本文 (Markdown対応) *</label>
+                <textarea id="content" name="content" class="form-textarea" placeholder="Markdown形式で記事を書いてください..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <div class="form-checkbox-wrapper">
+                    <input type="checkbox" id="published" name="published" class="form-checkbox">
+                    <label for="published" class="form-label" style="margin: 0;">この記事を公開する</label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">💾 保存</button>
+                <button type="button" id="previewBtn" class="btn btn-secondary">👁️ プレビュー</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('editorForm');
+        const alert = document.getElementById('alert');
+        const articleIdInput = document.getElementById('articleId');
+
+        // URLからIDを取得
+        const pathParts = window.location.pathname.split('/');
+        const articleId = pathParts[pathParts.length - 1];
+        const isEditing = articleId && articleId !== 'editor';
+
+        function showAlert(message, type = 'error') {
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 編集モードの場合、記事データを読み込む
+        if (isEditing) {
+            articleIdInput.value = articleId;
+            loadArticle(articleId);
+        }
+
+        async function loadArticle(id) {
+            try {
+                const response = await fetch(`/api/admin/articles/${id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const article = data.article;
+                    document.getElementById('title').value = article.title;
+                    document.getElementById('category').value = article.category;
+                    document.getElementById('readTime').value = article.read_time;
+                    document.getElementById('excerpt').value = article.excerpt;
+                    document.getElementById('content').value = article.content;
+                    document.getElementById('imageGradient').value = article.image_gradient;
+                    document.getElementById('published').checked = article.published === 1;
+                } else {
+                    showAlert('記事の読み込みに失敗しました');
+                }
+            } catch (error) {
+                console.error('記事読み込みエラー:', error);
+                showAlert('サーバーエラーが発生しました');
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                read_time: document.getElementById('readTime').value,
+                excerpt: document.getElementById('excerpt').value,
+                content: document.getElementById('content').value,
+                image_gradient: document.getElementById('imageGradient').value,
+                published: document.getElementById('published').checked
+            };
+
+            try {
+                const url = isEditing ? `/api/admin/articles/${articleId}` : '/api/admin/articles';
+                const method = isEditing ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(isEditing ? '記事を更新しました' : '記事を作成しました', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin/dashboard';
+                    }, 1500);
+                } else {
+                    showAlert(data.message || '保存に失敗しました');
+                }
+            } catch (error) {
+                console.error('保存エラー:', error);
+                showAlert('サーバーエラーが発生しました');
+            }
+        });
+
+        // プレビュー機能（簡易版）
+        document.getElementById('previewBtn').addEventListener('click', () => {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            if (!title || !content) {
+                showAlert('タイトルと本文を入力してください');
+                return;
+            }
+
+            // 新しいウィンドウでプレビュー表示
+            const preview = window.open('', 'Preview', 'width=800,height=600');
+            preview.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${title}</title>
+                    <style>
+                        body {
+                            font-family: 'Inter', sans-serif;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 2rem;
+                            line-height: 1.6;
+                        }
+                        h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+                        h2 { font-size: 2rem; margin-top: 2rem; margin-bottom: 1rem; }
+                        h3 { font-size: 1.5rem; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+                        p { margin-bottom: 1rem; }
+                        code { background: #f4f4f4; padding: 0.2rem 0.4rem; border-radius: 3px; }
+                        pre { background: #f4f4f4; padding: 1rem; border-radius: 5px; overflow-x: auto; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${title}</h1>
+                    <pre style="white-space: pre-wrap;">${content}</pre>
+                </body>
+                </html>
+            `);
+        });
+    </script>
+</body>
+</html>

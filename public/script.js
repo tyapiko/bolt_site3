@@ -251,6 +251,56 @@ if (heroTitle) {
     setTimeout(typeText1, 500);
 }
 
+// ===== 記事の動的読み込み =====
+async function loadArticles() {
+    try {
+        const response = await fetch('/api/articles');
+        const data = await response.json();
+
+        if (data.success && data.articles.length > 0) {
+            const articlesGrid = document.getElementById('articlesGrid');
+            articlesGrid.innerHTML = data.articles.map((article, index) => `
+                <article class="article-card ${index === 0 ? 'featured-article' : ''}">
+                    <div class="article-image">
+                        <div class="article-category">${article.category}</div>
+                        <div class="image-placeholder" style="background: ${article.image_gradient};"></div>
+                    </div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="article-date">${new Date(article.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            <span class="article-read-time">${article.read_time}</span>
+                        </div>
+                        <h3 class="article-title">${article.title}</h3>
+                        <p class="article-excerpt">${article.excerpt}</p>
+                        <a href="#article-${article.id}" class="article-link">続きを読む →</a>
+                    </div>
+                </article>
+            `).join('');
+
+            // アニメーション再適用
+            document.querySelectorAll('.article-card').forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(40px)';
+                el.style.transition = 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                observer.observe(el);
+            });
+        }
+    } catch (error) {
+        console.error('記事読み込みエラー:', error);
+        const articlesGrid = document.getElementById('articlesGrid');
+        articlesGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: rgba(255,255,255,0.5);">
+                記事の読み込みに失敗しました
+            </div>
+        `;
+    }
+}
+
+// ページ読み込み時に記事を取得
+if (document.getElementById('articlesGrid')) {
+    loadArticles();
+}
+
 // ===== デバッグ情報 =====
 console.log('%c🚀 TechBlog v2.0 - Cyber Edition', 'color: #00f0ff; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px rgba(0,240,255,0.5);');
 console.log('%cPowered by Node.js + Express + AI', 'color: #bf00ff; font-size: 12px;');

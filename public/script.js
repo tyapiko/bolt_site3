@@ -1,12 +1,181 @@
-document.getElementById('apiBtn').addEventListener('click', async () => {
-    const resultDiv = document.getElementById('apiResult');
-    resultDiv.textContent = '読み込み中...';
+// ===== ナビゲーションスクロール効果 =====
+const navbar = document.querySelector('.navbar');
+let lastScroll = 0;
 
-    try {
-        const response = await fetch('/api/hello');
-        const data = await response.json();
-        resultDiv.textContent = data.message;
-    } catch (error) {
-        resultDiv.textContent = 'エラーが発生しました: ' + error.message;
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+
+    if (currentScroll > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
     }
+
+    lastScroll = currentScroll;
 });
+
+// ===== モバイルメニュー =====
+const hamburger = document.querySelector('.hamburger');
+const navMenu = document.querySelector('.nav-menu');
+
+hamburger?.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+});
+
+// メニューリンククリックでメニューを閉じる
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+        hamburger?.classList.remove('active');
+        navMenu?.classList.remove('active');
+    });
+});
+
+// ===== スムーススクロール =====
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            const offsetTop = target.offsetTop - 80;
+            window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+// ===== アクティブリンクハイライト =====
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+
+window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        const sectionHeight = section.clientHeight;
+        if (window.pageYOffset >= sectionTop) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+            link.classList.add('active');
+        }
+    });
+});
+
+// ===== パーティクルアニメーション強化 =====
+function createParticles() {
+    const particlesContainer = document.querySelector('.particles');
+    if (!particlesContainer) return;
+
+    for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.style.position = 'absolute';
+        particle.style.width = Math.random() * 3 + 'px';
+        particle.style.height = particle.style.width;
+        particle.style.background = 'rgba(255, 255, 255, 0.5)';
+        particle.style.borderRadius = '50%';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animation = `float ${Math.random() * 10 + 10}s linear infinite`;
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        particlesContainer.appendChild(particle);
+    }
+}
+
+createParticles();
+
+// ===== カードホバーエフェクト =====
+const articleCards = document.querySelectorAll('.article-card');
+
+articleCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = (y - centerY) / 20;
+        const rotateY = (centerX - x) / 20;
+
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+    });
+});
+
+// ===== ニュースレターフォーム =====
+const newsletterForm = document.querySelector('.newsletter-form');
+
+newsletterForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = e.target.querySelector('.newsletter-input').value;
+    const button = e.target.querySelector('.btn-primary');
+    const originalText = button.textContent;
+
+    button.textContent = '登録中...';
+    button.disabled = true;
+
+    // シミュレーション（実際にはAPIに送信）
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    button.textContent = '登録完了！';
+    button.style.background = '#10b981';
+
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+        button.style.background = '';
+        e.target.reset();
+    }, 2000);
+});
+
+// ===== スクロールアニメーション =====
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// アニメーション対象要素
+document.querySelectorAll('.article-card, .section-header').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+});
+
+// ===== ロードアニメーション =====
+window.addEventListener('load', () => {
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.transition = 'opacity 0.5s ease';
+        document.body.style.opacity = '1';
+    }, 100);
+});
+
+// ===== ページビューカウンター（デモ） =====
+const viewCount = localStorage.getItem('pageViews') || 0;
+localStorage.setItem('pageViews', parseInt(viewCount) + 1);
+console.log(`ページビュー: ${parseInt(viewCount) + 1}回`);
+
+// ===== デバッグ情報 =====
+console.log('%c🚀 TechBlog v1.0', 'color: #6366f1; font-size: 20px; font-weight: bold;');
+console.log('%cPowered by Node.js + Express', 'color: #64748b; font-size: 12px;');
